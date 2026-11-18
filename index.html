@@ -34,11 +34,16 @@ textarea{min-height:100px;resize:none}
 .res .t{display:inline-block;margin:10px 0;padding:6px 14px;border-radius:99px;background:#d4af37;color:#1a1400;font-weight:800;font-size:14px}
 .box{text-align:left;background:rgba(255,255,255,.07);border-radius:14px;padding:14px;margin-top:12px;font-size:15px;line-height:1.5}
 .box b{color:#2ee6a6}
+.lg{height:34px;width:auto;background:#fff;border-radius:9px;padding:2px 4px}
+.hero{height:150px;width:auto;background:#fff;border-radius:22px;padding:8px 12px;margin:6px 0 18px;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(79,140,255,.0),0 0 24px rgba(255,107,214,.35)}50%{box-shadow:0 0 0 8px rgba(79,140,255,.12),0 0 46px rgba(46,230,166,.55)}}
+.ring{width:124px;height:124px;border-radius:50%;margin:12px auto 4px;background:conic-gradient(#2ee6a6 calc(var(--p)*1%),#1c2547 0);display:flex;align-items:center;justify-content:center}
+.ring b{width:96px;height:96px;border-radius:50%;background:#0b1020;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="brand"><span class="dot"></span> LAUNCHPAD 2026 MACHINE &middot; ZETRA</div>
+  <div class="brand"><img src="logo.png" class="lg" alt="" onerror="this.style.display='none'"><span class="dot"></span> LAUNCHPAD 2026 MACHINE</div>
   <div class="bar" id="barWrap"><i id="bar"></i></div>
   <div id="app"></div>
 </div>
@@ -116,7 +121,7 @@ function save(){try{localStorage.setItem("lp26",JSON.stringify({A:A,releaseTs:re
 
 function intro(){
   barWrap.classList.add("hide");
-  app.innerHTML = '<h1>Welcome to the Launchpad Machine</h1>' +
+  app.innerHTML = '<div style="text-align:center"><img src="logo.png" class="hero" alt="" onerror="this.style.display=\'none\'"></div><h1>Welcome to the Launchpad Machine</h1>' +
    '<p>Answer a few quick questions. Then wait for the countdown. When it hits zero, <b>everyone\'s result opens at the same time</b>: your personal certificate and your best free automation tool.</p>' +
    '<div class="card"><p class="small" style="margin:0">Built live from a phone, on GitHub, for free. That is the point of automation.</p></div>' +
    '<button class="btn" id="go" style="margin-top:18px">Start</button>';
@@ -164,9 +169,11 @@ function wait(){
   app.innerHTML='<h2>Done, '+esc(A.name.split(" ")[0])+'. Your machine is processing.</h2>' +
    '<div class="card"><p class="small" style="text-align:center;margin:0">Your result opens in</p><div class="timer" id="tm">--:--</div>' +
    '<p class="small" style="text-align:center;margin:0">Keep this page open. Everyone\'s result unlocks together.</p></div>' +
-   '<div class="tip" id="tp" style="margin-top:22px"></div>';
-  var k=0, tp=document.getElementById("tp"); tp.textContent=tips[0];
-  tipTimer=setInterval(function(){k=(k+1)%tips.length;tp.style.opacity=0;setTimeout(function(){tp.textContent=tips[k];tp.style.opacity=1},300)},6000);
+   '<p class="small" id="pm" style="text-align:center;margin:16px 0 0;color:#2ee6a6"></p>' +
+   '<div class="tip" id="tp" style="margin-top:14px"></div>';
+  var msgs=["Reading your "+steps.length+" answers...","Matching you with free tools...","Calculating your automation score...","Designing your certificate...","Getting Toluwani to sign it..."];
+  var k=0, tp=document.getElementById("tp"), pm=document.getElementById("pm"); tp.textContent=tips[0]; pm.textContent=msgs[0];
+  tipTimer=setInterval(function(){k=(k+1)%tips.length;pm.textContent=msgs[k%msgs.length];tp.style.opacity=0;setTimeout(function(){tp.textContent=tips[k];tp.style.opacity=1},300)},5000);
   tickTimer=setInterval(tick,250); tick();
 }
 
@@ -177,6 +184,24 @@ function tick(){
 }
 
 function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
+
+function ix(k){
+  for(var n=0;n<steps.length;n++){ if(steps[n].k===k){ var o=steps[n].o||[]; for(var m=0;m<o.length;m++){ if((Array.isArray(o[m])?o[m][1]:o[m])===A[k]) return m; } } }
+  return 0;
+}
+function sc(){ return Math.min(98, 55 + ix("ai")*6 + ix("code")*5 + ix("conf")*4 + ix("google")*3 + ix("free")*2 + ix("built")*3); }
+
+function confetti(){
+  var c=document.createElement("canvas"); c.style.cssText="position:fixed;left:0;top:0;pointer-events:none;z-index:9";
+  c.width=innerWidth; c.height=innerHeight; document.body.appendChild(c);
+  var x=c.getContext("2d"), p=[], cols=["#2ee6a6","#4f8cff","#d4af37","#ff6bd6","#ffffff"], t0=Date.now();
+  for(var n=0;n<170;n++) p.push({x:Math.random()*c.width,y:-20-Math.random()*c.height*.5,vx:(Math.random()-.5)*3,vy:2+Math.random()*4,s:6+Math.random()*7,c:cols[n%5],r:Math.random()*6});
+  (function f(){
+    x.clearRect(0,0,c.width,c.height);
+    p.forEach(function(a){a.x+=a.vx;a.y+=a.vy;a.r+=.12;x.fillStyle=a.c;x.save();x.translate(a.x,a.y);x.rotate(a.r);x.fillRect(-a.s/2,-a.s/2,a.s,a.s*.6);x.restore()});
+    if(Date.now()-t0<4500) requestAnimationFrame(f); else c.remove();
+  })();
+}
 
 function title(){
   var g={ "An app":"Builder","A website":"Architect","A business":"Founder","Research work":"Thinker","A content brand":"Creator" }[A.goal]||"Builder";
@@ -193,21 +218,30 @@ function result(){
    '<p class="small" style="margin:0">has completed the Automation Challenge.<br>Signed: Toluwani Oyedele, CEO, Zetra</p></div>' +
    '<div class="box"><b>Your repeated task:</b> '+esc(A.taskLabel||"")+'<br><b>Best free tool for you:</b> '+esc(tl.t)+'<br><br>'+steps3+'</div>' +
    '<div class="box"><b>Your 30-day plan:</b> '+esc(A.dream)+'<br><b>Biggest blocker:</b> '+esc(A.block)+'. Start small. Start today.</div>' +
+   '<div class="box" style="text-align:center"><b>Your Automation Readiness Score</b><div class="ring" style="--p:'+sc()+'"><b>'+sc()+'%</b></div></div>' +
    '<button class="btn" id="dl">Download my certificate</button>' +
    '<button class="btn alt" id="sh">Share on WhatsApp</button>';
   document.getElementById("dl").onclick=cert;
+  confetti(); if(navigator.vibrate) navigator.vibrate([200,100,200]);
   document.getElementById("sh").onclick=function(){
     var m="I just got my "+EVENT+" certificate: "+title()+"! Automation is free. Try it: "+location.href.split("?")[0];
     location.href="https://wa.me/?text="+encodeURIComponent(m);};
 }
 
 function cert(){
+  var im=new Image();
+  im.onload=function(){drawCert(im)};
+  im.onerror=function(){drawCert(null)};
+  im.src="logo.png";
+}
+function drawCert(im){
   var c=document.createElement("canvas"); c.width=1080; c.height=1350; var x=c.getContext("2d");
   var g=x.createLinearGradient(0,0,1080,1350); g.addColorStop(0,"#16275f"); g.addColorStop(1,"#0b1020");
   x.fillStyle=g; x.fillRect(0,0,1080,1350);
   x.strokeStyle="#d4af37"; x.lineWidth=10; x.strokeRect(40,40,1000,1270);
   x.lineWidth=2; x.strokeRect(62,62,956,1226);
-  x.textAlign="center"; x.fillStyle="#d4af37"; x.font="bold 34px sans-serif"; x.fillText("CERTIFICATE OF PARTICIPATION",540,190);
+  if(im){ var lh=86, lw=im.width/im.height*lh; x.fillStyle="#ffffff"; x.fillRect(540-lw/2-12,70,lw+24,lh+12); x.drawImage(im,540-lw/2,76,lw,lh); }
+  x.textAlign="center"; x.fillStyle="#d4af37"; x.font="bold 34px sans-serif"; x.fillText("CERTIFICATE OF PARTICIPATION",540,212);
   x.fillStyle="#fff"; x.font="bold 54px sans-serif"; x.fillText("LAUNCHPAD 2026",540,300);
   x.fillStyle="#9fb4ff"; x.font="30px sans-serif"; x.fillText("Tech Conference, FUOYE",540,350);
   x.fillStyle="#b9c3e6"; x.font="32px sans-serif"; x.fillText("This certifies that",540,520);
@@ -220,6 +254,8 @@ function cert(){
   x.fillText("and built a free automation, live.",540,968);
   x.fillStyle="#fff"; x.font="italic 44px serif"; x.fillText("Toluwani Oyedele",540,1150);
   x.fillStyle="#9fb4ff"; x.font="28px sans-serif"; x.fillText("Founder & CEO, Zetra",540,1195);
+  var hh=0; for(var n=0;n<A.name.length;n++){hh=(hh*31+A.name.charCodeAt(n))%9000;}
+  x.fillStyle="#6f7fb5"; x.font="24px sans-serif"; x.fillText("Certificate No. LP26-"+(hh+1000)+"   |   Automation Readiness: "+sc()+"%",540,1262);
   c.toBlob(function(b){var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="Launchpad2026-"+A.name.replace(/\s+/g,"_")+".png";document.body.appendChild(a);a.click();a.remove()});
 }
 
