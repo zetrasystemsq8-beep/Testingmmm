@@ -1,9 +1,205 @@
-<input id="n" placeholder="Your name">
-<input id="p" placeholder="Task that stresses you">
-<button onclick="go()">Get my result</button>
-<h2 id="r"></h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>Launchpad 2026 Machine</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:radial-gradient(1200px 600px at 50% -10%,#1d2f6b,#0b1020 60%);color:#fff;display:flex;justify-content:center}
+.wrap{width:100%;max-width:480px;padding:20px 18px 40px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.5px;font-size:14px;color:#9fb4ff;margin:6px 0 18px}
+.dot{width:10px;height:10px;border-radius:50%;background:#2ee6a6;box-shadow:0 0 12px #2ee6a6}
+.bar{height:6px;background:#1c2547;border-radius:9px;overflow:hidden;margin-bottom:22px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2ee6a6,#4f8cff);transition:width .4s}
+h1{font-size:28px;line-height:1.2;margin:0 0 10px}
+h2{font-size:22px;line-height:1.3;margin:0 0 18px}
+p{color:#b9c3e6;line-height:1.5}
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px;backdrop-filter:blur(6px)}
+input,textarea{width:100%;padding:15px;margin:0 0 12px;border-radius:12px;border:1px solid #33407a;background:#0f1730;color:#fff;font-size:16px;outline:none;font-family:inherit}
+input:focus,textarea:focus{border-color:#4f8cff}
+textarea{min-height:100px;resize:none}
+.opt{display:block;width:100%;text-align:left;padding:15px;margin:0 0 10px;border-radius:12px;border:1px solid #33407a;background:#0f1730;color:#fff;font-size:16px;font-family:inherit}
+.opt:active{background:#1b2b66;border-color:#4f8cff}
+.btn{display:block;width:100%;padding:16px;border:0;border-radius:14px;background:linear-gradient(90deg,#2ee6a6,#4f8cff);color:#04101f;font-weight:800;font-size:17px;font-family:inherit;margin-top:6px}
+.btn.alt{background:#1b2b66;color:#fff}
+.small{font-size:13px;color:#8391c7}
+.timer{font-size:64px;font-weight:800;text-align:center;letter-spacing:2px;margin:10px 0;background:linear-gradient(90deg,#2ee6a6,#4f8cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tip{min-height:70px;text-align:center;color:#d6defa;font-size:17px;line-height:1.5;transition:opacity .4s}
+.hide{display:none}
+.res{background:linear-gradient(160deg,#16275f,#0b1020);border:2px solid #d4af37;border-radius:20px;padding:22px;text-align:center}
+.res .k{font-size:12px;letter-spacing:3px;color:#d4af37}
+.res .n{font-size:26px;font-weight:800;margin:8px 0 2px}
+.res .t{display:inline-block;margin:10px 0;padding:6px 14px;border-radius:99px;background:#d4af37;color:#1a1400;font-weight:800;font-size:14px}
+.box{text-align:left;background:rgba(255,255,255,.07);border-radius:14px;padding:14px;margin-top:12px;font-size:15px;line-height:1.5}
+.box b{color:#2ee6a6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><span class="dot"></span> LAUNCHPAD 2026 MACHINE &middot; ZETRA</div>
+  <div class="bar" id="barWrap"><i id="bar"></i></div>
+  <div id="app"></div>
+</div>
+
 <script>
-function go(){
- r.innerHTML = "🏅 " + n.value + " is a Launchpad 2026 Automation Challenger.<br>Problem: " + p.value + "<br>Fix: map the steps, then use a free tool.";
+/* ===== CHANGE THESE TWO LINES ON STAGE ===== */
+var EVENT = "Launchpad 2026 - FUOYE";
+var MINUTES = 15;          // result opens this many minutes after the student starts
+var RELEASE_AT = "";       // optional: exact time for everyone, e.g. "2026-11-20T10:30:00+01:00"
+/* =========================================== */
+
+var q = new URLSearchParams(location.search);
+if (q.has("test")) MINUTES = 0.5;   // open the page with ?test to try a 30-second timer
+
+var tools = {
+  notes:{t:"Google Docs Voice Typing",s:["Open Google Docs on your phone","Tap the mic on your keyboard and speak your lecture notes","Edit lightly and save. No more copying by hand"]},
+  msgs:{t:"WhatsApp Business Quick Replies",s:["Install WhatsApp Business (free)","Settings > Business tools > Quick replies","Type a shortcut like /hello and your reply appears in one tap"]},
+  remind:{t:"Google Calendar Notifications",s:["Open Google Calendar","Add each deadline as an event","Set a notification 1 day and 1 hour before"]},
+  post:{t:"Meta Business Suite Scheduler",s:["Connect your Facebook or Instagram page","Write all posts in one sitting","Pick dates and times. They post themselves"]},
+  data:{t:"Google Forms + Google Sheets",s:["Make a Google Form for the data you collect","Link it to a Sheet","Answers now arrive in rows by themselves"]},
+  other:{t:"Zapier or Make",s:["Open zapier.com or make.com (free plans)","Pick a trigger: 'when this happens'","Pick an action: 'do this'. Your first automation is live"]}
+};
+
+var steps = [
+ {k:"name",type:"text",q:"What is your full name?",ph:"e.g. Adaeze Johnson",hint:"This goes on your certificate"},
+ {k:"dept",type:"text",q:"Your department?",ph:"e.g. Computer Science"},
+ {k:"level",type:"choice",q:"Your level?",o:["100","200","300","400","500 / Postgraduate"]},
+ {k:"task",type:"choice",q:"Which task do you repeat the most?",o:[["Copying or rewriting notes","notes"],["Sending the same messages","msgs"],["Remembering deadlines","remind"],["Posting content","post"],["Recording data in sheets","data"],["Something else","other"]]},
+ {k:"freq",type:"choice",q:"How many times a week do you repeat it?",o:["1 to 3 times","4 to 7 times","Daily, many times","I have lost count"]},
+ {k:"time",type:"choice",q:"How much time does it cost you daily?",o:["Under 30 minutes","About 1 hour","2 hours or more","Too much, abeg"]},
+ {k:"device",type:"choice",q:"What do you use the most?",o:["My phone only","Phone and laptop","Mostly laptop","Cyber cafe"]},
+ {k:"ai",type:"choice",q:"How often do you use AI tools?",o:["Never yet","Sometimes","Every day","I am already addicted"]},
+ {k:"goal",type:"choice",q:"What do you want to build?",o:["An app","A website","A business","Research work","A content brand"]},
+ {k:"block",type:"choice",q:"Your biggest blocker?",o:["No laptop","Data and network","I do not know where to start","Fear of failing"]},
+ {k:"power",type:"choice",q:"Pick your superpower",o:["Creativity","Logic","Persistence","Communication"]},
+ {k:"conf",type:"choice",q:"Digital confidence, honestly?",o:["1 - just starting","2","3 - okay","4","5 - I dey code"]},
+ {k:"dream",type:"text",q:"In one sentence, what will you automate or build in the next 30 days?",ph:"Type here...",area:true}
+];
+
+var tips = [
+ "Toluwani's Law: Automate a mess and you only get a faster mess.",
+ "Trigger. Workflow. Outcome. Every automation is these three.",
+ "A person who uses technology better than you will replace you. Be that person.",
+ "You do not need a million naira. You need one problem and a free tool.",
+ "Be lazy, but be lazy with a plan.",
+ "The best time to start was yesterday. The second best is before NEPA takes the light.",
+ "Wisdom is greater than strength. Ogbon ju agbara lo."
+];
+
+var app = document.getElementById("app"), bar = document.getElementById("bar"), barWrap = document.getElementById("barWrap");
+var A = {}, i = -1, releaseTs = 0, tipTimer, tickTimer;
+
+function el(h){var d=document.createElement("div");d.innerHTML=h;return d}
+function save(){try{localStorage.setItem("lp26",JSON.stringify({A:A,releaseTs:releaseTs}))}catch(e){}}
+
+function intro(){
+  barWrap.classList.add("hide");
+  app.innerHTML = '<h1>Welcome to the Launchpad Machine</h1>' +
+   '<p>Answer a few quick questions. Then wait for the countdown. When it hits zero, <b>everyone\'s result opens at the same time</b>: your personal certificate and your best free automation tool.</p>' +
+   '<div class="card"><p class="small" style="margin:0">Built live from a phone, on GitHub, for free. That is the point of automation.</p></div>' +
+   '<button class="btn" id="go" style="margin-top:18px">Start</button>';
+  document.getElementById("go").onclick=function(){i=0;barWrap.classList.remove("hide");show()};
 }
+
+function show(){
+  if(i>=steps.length) return finish();
+  var s=steps[i];
+  bar.style.width=(i/steps.length*100)+"%";
+  var h='<p class="small">Question '+(i+1)+' of '+steps.length+'</p><h2>'+s.q+'</h2>';
+  if(s.type==="choice"){
+    s.o.forEach(function(o,idx){h+='<button class="opt" data-i="'+idx+'">'+(Array.isArray(o)?o[0]:o)+'</button>'});
+  }else{
+    h+=(s.area?'<textarea id="t" placeholder="'+s.ph+'"></textarea>':'<input id="t" placeholder="'+s.ph+'" autocomplete="off">');
+    if(s.hint) h+='<p class="small">'+s.hint+'</p>';
+    h+='<button class="btn" id="nx">Next</button>';
+  }
+  app.innerHTML=h;
+  if(s.type==="choice"){
+    app.querySelectorAll(".opt").forEach(function(b){b.onclick=function(){
+      var o=s.o[+b.dataset.i]; A[s.k]=Array.isArray(o)?o[1]:o; if(s.k==="task")A.taskLabel=o[0]; i++; show();}});
+  }else{
+    var t=document.getElementById("t"); t.focus();
+    document.getElementById("nx").onclick=function(){
+      if(!t.value.trim()){t.style.borderColor="#ff6b6b";return}
+      A[s.k]=t.value.trim(); i++; show();};
+  }
+}
+
+function finish(){
+  bar.style.width="100%";
+  var now=Date.now();
+  releaseTs = RELEASE_AT ? new Date(RELEASE_AT).getTime() : now + MINUTES*60000;
+  save(); wait();
+}
+
+function wait(){
+  barWrap.classList.add("hide");
+  app.innerHTML='<h2>Done, '+esc(A.name.split(" ")[0])+'. Your machine is processing.</h2>' +
+   '<div class="card"><p class="small" style="text-align:center;margin:0">Your result opens in</p><div class="timer" id="tm">--:--</div>' +
+   '<p class="small" style="text-align:center;margin:0">Keep this page open. Everyone\'s result unlocks together.</p></div>' +
+   '<div class="tip" id="tp" style="margin-top:22px"></div>';
+  var k=0, tp=document.getElementById("tp"); tp.textContent=tips[0];
+  tipTimer=setInterval(function(){k=(k+1)%tips.length;tp.style.opacity=0;setTimeout(function(){tp.textContent=tips[k];tp.style.opacity=1},300)},6000);
+  tickTimer=setInterval(tick,250); tick();
+}
+
+function tick(){
+  var left=Math.max(0,releaseTs-Date.now()), tm=document.getElementById("tm");
+  if(tm){var m=Math.floor(left/60000),s=Math.floor(left%60000/1000);tm.textContent=(m<10?"0":"")+m+":"+(s<10?"0":"")+s}
+  if(left<=0){clearInterval(tickTimer);clearInterval(tipTimer);result()}
+}
+
+function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
+
+function title(){
+  var g={ "An app":"Builder","A website":"Architect","A business":"Founder","Research work":"Thinker","A content brand":"Creator" }[A.goal]||"Builder";
+  return A.power+" "+g;
+}
+
+function result(){
+  var tl=tools[A.task]||tools.other, name=A.name;
+  var steps3=tl.s.map(function(x,n){return (n+1)+". "+x}).join("<br>");
+  app.innerHTML='<div class="res"><div class="k">'+esc(EVENT.toUpperCase())+'</div>' +
+   '<p class="small" style="margin:14px 0 0">This certifies that</p><div class="n">'+esc(name)+'</div>' +
+   '<div class="small">'+esc(A.dept)+' &middot; '+esc(A.level)+' Level &middot; FUOYE</div>' +
+   '<div class="t">'+esc(title())+'</div>' +
+   '<p class="small" style="margin:0">has completed the Automation Challenge.<br>Signed: Toluwani Oyedele, CEO, Zetra</p></div>' +
+   '<div class="box"><b>Your repeated task:</b> '+esc(A.taskLabel||"")+'<br><b>Best free tool for you:</b> '+esc(tl.t)+'<br><br>'+steps3+'</div>' +
+   '<div class="box"><b>Your 30-day plan:</b> '+esc(A.dream)+'<br><b>Biggest blocker:</b> '+esc(A.block)+'. Start small. Start today.</div>' +
+   '<button class="btn" id="dl">Download my certificate</button>' +
+   '<button class="btn alt" id="sh">Share on WhatsApp</button>';
+  document.getElementById("dl").onclick=cert;
+  document.getElementById("sh").onclick=function(){
+    var m="I just got my "+EVENT+" certificate: "+title()+"! Automation is free. Try it: "+location.href.split("?")[0];
+    location.href="https://wa.me/?text="+encodeURIComponent(m);};
+}
+
+function cert(){
+  var c=document.createElement("canvas"); c.width=1080; c.height=1350; var x=c.getContext("2d");
+  var g=x.createLinearGradient(0,0,1080,1350); g.addColorStop(0,"#16275f"); g.addColorStop(1,"#0b1020");
+  x.fillStyle=g; x.fillRect(0,0,1080,1350);
+  x.strokeStyle="#d4af37"; x.lineWidth=10; x.strokeRect(40,40,1000,1270);
+  x.lineWidth=2; x.strokeRect(62,62,956,1226);
+  x.textAlign="center"; x.fillStyle="#d4af37"; x.font="bold 34px sans-serif"; x.fillText("CERTIFICATE OF PARTICIPATION",540,190);
+  x.fillStyle="#fff"; x.font="bold 54px sans-serif"; x.fillText("LAUNCHPAD 2026",540,300);
+  x.fillStyle="#9fb4ff"; x.font="30px sans-serif"; x.fillText("Tech Conference, FUOYE",540,350);
+  x.fillStyle="#b9c3e6"; x.font="32px sans-serif"; x.fillText("This certifies that",540,520);
+  var nm=A.name, fs=84; x.font="bold "+fs+"px sans-serif";
+  while(x.measureText(nm).width>880&&fs>36){fs-=4;x.font="bold "+fs+"px sans-serif"}
+  x.fillStyle="#fff"; x.fillText(nm,540,640);
+  x.fillStyle="#9fb4ff"; x.font="32px sans-serif"; x.fillText(A.dept+"  |  "+A.level+" Level",540,710);
+  x.fillStyle="#d4af37"; x.font="bold 50px sans-serif"; x.fillText(title(),540,850);
+  x.fillStyle="#b9c3e6"; x.font="32px sans-serif"; x.fillText("has completed the Automation Challenge",540,920);
+  x.fillText("and built a free automation, live.",540,968);
+  x.fillStyle="#fff"; x.font="italic 44px serif"; x.fillText("Toluwani Oyedele",540,1150);
+  x.fillStyle="#9fb4ff"; x.font="28px sans-serif"; x.fillText("Founder & CEO, Zetra",540,1195);
+  c.toBlob(function(b){var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="Launchpad2026-"+A.name.replace(/\s+/g,"_")+".png";document.body.appendChild(a);a.click();a.remove()});
+}
+
+/* resume if page was refreshed */
+try{var sv=JSON.parse(localStorage.getItem("lp26")||"null");if(sv&&sv.A&&sv.A.dream&&!q.has("reset")){A=sv.A;releaseTs=sv.releaseTs;wait()}else{intro()}}catch(e){intro()}
 </script>
+</body>
+</html>
