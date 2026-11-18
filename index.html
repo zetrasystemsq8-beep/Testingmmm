@@ -46,7 +46,7 @@ textarea{min-height:100px;resize:none}
 <script>
 /* ===== CHANGE THESE TWO LINES ON STAGE ===== */
 var EVENT = "Launchpad 2026 - FUOYE";
-var MINUTES = 15;          // result opens this many minutes after the student starts
+var MINUTES = 5;           // result opens this many minutes after the student finishes
 var RELEASE_AT = "";       // optional: exact time for everyone, e.g. "2026-11-20T10:30:00+01:00"
 /* =========================================== */
 
@@ -75,6 +75,26 @@ var steps = [
  {k:"block",type:"choice",q:"Your biggest blocker?",o:["No laptop","Data and network","I do not know where to start","Fear of failing"]},
  {k:"power",type:"choice",q:"Pick your superpower",o:["Creativity","Logic","Persistence","Communication"]},
  {k:"conf",type:"choice",q:"Digital confidence, honestly?",o:["1 - just starting","2","3 - okay","4","5 - I dey code"]},
+ {k:"hear",type:"choice",q:"How did you hear about Launchpad 2026?",o:["YALI Network Ekiti","A friend","Social media","My lecturer","I just came"]},
+ {k:"phone",type:"choice",q:"Hours on your phone daily?",o:["Under 2 hours","2 to 4 hours","5 to 8 hours","Do not ask me"]},
+ {k:"app",type:"choice",q:"Which app eats your time the most?",o:["WhatsApp","TikTok","Instagram","X (Twitter)","YouTube","Facebook"]},
+ {k:"code",type:"choice",q:"Do you write code?",o:["Never","I am learning","I build small things","I build real projects"]},
+ {k:"lang",type:"choice",q:"Which have you touched?",o:["None yet","Python","JavaScript","Dart / Flutter","Java or C++","HTML and CSS"]},
+ {k:"built",type:"choice",q:"Have you built something other people used?",o:["Not yet","A small project","A website or app","A business"]},
+ {k:"hustle",type:"choice",q:"Do you have a side hustle?",o:["No","Thinking about it","Yes, small","Yes, it is growing"]},
+ {k:"study",type:"choice",q:"How do you study best?",o:["Watching videos","Reading","Practising","Group study","Last-minute panic"]},
+ {k:"stuck",type:"choice",q:"What do you do when you hit a problem?",o:["Google it","Ask a friend","Ask AI","Give up small","Pray and try again"]},
+ {k:"time2",type:"choice",q:"How do you manage your timetable?",o:["Paper","Phone calendar","Memory only","Pure chaos"]},
+ {k:"google",type:"choice",q:"Do you use Google Docs, Sheets or Forms?",o:["Never","Sometimes","Often","Every day"]},
+ {k:"first",type:"choice",q:"What would you automate first?",o:["Assignment reminders","Study timetable","Business orders","Attendance and lists","Social media posts"]},
+ {k:"career",type:"choice",q:"Dream career?",o:["Software developer","Entrepreneur","Data analyst","Designer","Researcher","Public servant"]},
+ {k:"where",type:"choice",q:"Where do you want to work?",o:["Nigeria","Abroad","Remote for the world","My own company"]},
+ {k:"fear",type:"choice",q:"What scares you most about technology?",o:["AI taking jobs","Being left behind","The cost","It looks too hard"]},
+ {k:"early",type:"choice",q:"What time does your day start?",o:["Before 6am","6am to 8am","After 8am","Which day?"]},
+ {k:"free",type:"choice",q:"Do you believe automation can be free?",o:["Yes","Maybe","No","Now I do"]},
+ {k:"wish",type:"text",q:"One thing you wish a machine could do for you at FUOYE?",ph:"e.g. wake me up for 8am lectures",area:true},
+ {k:"teach",type:"text",q:"Name one person you will teach what you learned today",ph:"Their name",hint:"Teaching is the fastest way to learn"},
+ {k:"wow",type:"choice",q:"How are you enjoying this so far?",o:["Very much","It is okay","I want my result now"]},
  {k:"dream",type:"text",q:"In one sentence, what will you automate or build in the next 30 days?",ph:"Type here...",area:true}
 ];
 
@@ -109,22 +129,27 @@ function show(){
   bar.style.width=(i/steps.length*100)+"%";
   var h='<p class="small">Question '+(i+1)+' of '+steps.length+'</p><h2>'+s.q+'</h2>';
   if(s.type==="choice"){
-    s.o.forEach(function(o,idx){h+='<button class="opt" data-i="'+idx+'">'+(Array.isArray(o)?o[0]:o)+'</button>'});
+    s.o.forEach(function(o,idx){
+      var val=Array.isArray(o)?o[1]:o, on=(A[s.k]===val);
+      h+='<button class="opt" data-i="'+idx+'"'+(on?' style="border-color:#2ee6a6;background:#12305a"':'')+'>'+(Array.isArray(o)?o[0]:o)+'</button>';
+    });
   }else{
     h+=(s.area?'<textarea id="t" placeholder="'+s.ph+'"></textarea>':'<input id="t" placeholder="'+s.ph+'" autocomplete="off">');
     if(s.hint) h+='<p class="small">'+s.hint+'</p>';
     h+='<button class="btn" id="nx">Next</button>';
   }
+  if(i>0) h+='<button class="btn alt" id="bk" style="margin-top:14px">&larr; Back</button>';
   app.innerHTML=h;
   if(s.type==="choice"){
     app.querySelectorAll(".opt").forEach(function(b){b.onclick=function(){
       var o=s.o[+b.dataset.i]; A[s.k]=Array.isArray(o)?o[1]:o; if(s.k==="task")A.taskLabel=o[0]; i++; show();}});
   }else{
-    var t=document.getElementById("t"); t.focus();
+    var t=document.getElementById("t"); if(A[s.k]) t.value=A[s.k]; t.focus();
     document.getElementById("nx").onclick=function(){
       if(!t.value.trim()){t.style.borderColor="#ff6b6b";return}
       A[s.k]=t.value.trim(); i++; show();};
   }
+  var bk=document.getElementById("bk"); if(bk) bk.onclick=function(){i--;show()};
 }
 
 function finish(){
